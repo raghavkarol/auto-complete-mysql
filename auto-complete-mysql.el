@@ -24,13 +24,33 @@
 ;; Put this file into your load-path and the following into your ~/.emacs:
 ;;   (require 'auto-complete-mysql)
 
-;; (mysql-fetch-column-doc "user_rdb" "displayName")
-;; (setq schema 'magma)
-;; (setq table-name 'user_rdb)
+;; (mysql-fetch-column-doc "user" "id")
+;; (setq schema 'cloud)
+;; (setq table-name 'device)
 ;; (setq column-name 'id)
 
 ;;; Code:
-(require 'mysql)
+
+;;; MySql Functions
+(defvar mysql-user "root")
+(defvar mysql-password "root")
+(defvar mysql-host "127.0.0.1")
+(defvar mysql-error-regexp "^ERROR [0-9]+ (.+?): ")
+
+(defun mysql-shell-query (sql)
+  (let ((cmd (format "MYSQL_PWD=%s mysql -u %s -h %s -e \"%s\" "
+                     mysql-password
+                     mysql-user
+                     mysql-host
+                     sql)))
+    (mysql-output-table (shell-command-to-string cmd))))
+
+(defsubst mysql-output-table (output)
+  (when output
+    (if (string-match mysql-error-regexp output)
+        (error "%s" output)
+      (mapcar (lambda (str) (split-string str "\t"))
+              (butlast (split-string output "\n"))))))
 
 ;;; Helper functions
 (setq enable-debug nil)
@@ -160,19 +180,7 @@
   (debug-print (format ">>> mysql-fetch-function-document %s" function-name))
   (mysql-fetch-function-doc (schema-name) function-name))
 
-
 ;;; Auto-complete SQL candidate generators
-(setq schemas-whitelist
-       (mysql-fetch
-        (format "show schemas")))
-
-(setq tables-whitelist
-      (mysql-fetch
-        (format "select table_name
-             from information_schema.tables
-            where table_schema in (%s)"
-           (to-sql-list schemas-whitelist))))
-
 (setq schemas-cache (make-hash-table :test 'equal-string))
 (defun candidates-sql-schemas ()
   (let ((schemas
@@ -242,7 +250,6 @@
   nil)
 
 ;;; Auto-complete mode configuration
-
 ;; Must be added before the other auto-complete sources. If an alias
 ;; is also provided by another ac-source e.g., doc is provided as
 ;; document by schemas then source first in the list that provides a
@@ -302,6 +309,17 @@
       (print-row (car rows))
       (print-row '(-))
       (mapcar 'print-row (cdr rows)))))
+
+(setq schemas-whitelist
+       (mysql-fetch
+        (format "show schemas")))
+
+(setq tables-whitelist
+      (mysql-fetch
+        (format "select table_name
+             from information_schema.tables
+            where table_schema in (%s)"
+           (to-sql-list schemas-whitelist))))
 
 (provide 'auto-complete-mysql)
 

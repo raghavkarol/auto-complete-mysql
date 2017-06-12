@@ -16,15 +16,10 @@ The lisp file provides functions that need to be added as `ac-sources` like:
                 ...
                 ))```
 
-Possible auto-completions are dynamically pulled from a configurable mysql instances and cached. Abusing auto-complete with `ac-0-sql-watch-and-register-table-alias` this mode provides completions on table aliases also i.e., 
+Possible auto-completions are dynamically pulled from a configurable mysql instances and cached. Abusing auto-complete with `ac-0-sql-watch-and-register-table-alias` this mode provides completions on table aliases also i.e.,
 
 ```SQL
  SELECT c.<xx> FROM customers c
  ```
 
 Auto-completions will be provided for alias c as a table of type customers.
-
-
-# Limitation
-
-Uses `mysql.el` which can be configured only for a single connection and a problem if you already use mysql.el. This limiation can easiliy be removed by removing the dependency on `mysql.el` simply by copying the used `mysql` functions to `auto-complete-mysql`

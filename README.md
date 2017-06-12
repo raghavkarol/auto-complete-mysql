@@ -1,6 +1,9 @@
 # auto-complete-mysql
 
-Emacs auto-complete mode ac-source for mysql-auto-completions. Can be used to get mysql auto-completions, schema, table, column and function completions, in any major mode e.g., org-mode, where you might write queries.
+Emacs auto-complete mode ac-source for mysql-auto-completions. Can be
+used to get mysql auto-completions, schema, table, column and function
+completions, in any major mode e.g., org-mode, where you might write
+queries.
 
 The lisp file provides functions that need to be added as `ac-sources` like:
 
@@ -14,9 +17,13 @@ The lisp file provides functions that need to be added as `ac-sources` like:
                 ac-1-sql-tables
                 ac-1-sql-columns
                 ...
-                ))```
+                ))
+```
 
-Possible auto-completions are dynamically pulled from a configurable mysql instances and cached. Abusing auto-complete with `ac-0-sql-watch-and-register-table-alias` this mode provides completions on table aliases also i.e.,
+Possible auto-completions are dynamically pulled from a configurable
+mysql instances and cached. Abusing auto-complete with
+`ac-0-sql-watch-and-register-table-alias` this mode provides
+completions on table aliases also i.e.,
 
 ```SQL
  SELECT c.<xx> FROM customers c

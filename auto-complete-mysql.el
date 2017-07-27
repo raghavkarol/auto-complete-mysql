@@ -191,7 +191,7 @@
 (setq table-cache (make-hash-table :test 'equal-string))
 (defun candidates-sql-tables ()
   (let ((schema (schema-name)))
-    (when (member schema schemas-whitelist)
+    (when (schemas-whitelist schema)
       (let* ((tables
              (or (gethash schema table-cache)
                  (puthash schema (mysql-fetch-tables schema) table-cache))))
@@ -200,7 +200,7 @@
 (setq functions-cache (make-hash-table :test 'equal-string))
 (defun candidates-sql-functions ()
   (let ((schema (schema-name)))
-    (when (member schema schemas-whitelist)
+    (when (schemas-whitelist schema)
       (let* ((functions
               (or (gethash schema functions-cache)
                   (puthash schema (mysql-fetch-functions schema) functions-cache))))
@@ -209,7 +209,7 @@
 (setq columns-cache (make-hash-table :test 'equal-string))
 (defun candidates-sql-columns ()
   (let ((table (table-name)))
-    (when (member table tables-whitelist)
+    (when (tables-whitelist table)
       (let ((columns
              (or (gethash table columns-cache)
                  (puthash table (mysql-fetch-columns table) columns-cache))))
@@ -310,16 +310,20 @@
       (print-row '(-))
       (mapcar 'print-row (cdr rows)))))
 
-(setq schemas-whitelist
-       (mysql-fetch
-        (format "show schemas")))
+(setq schemas-whitelist-cache nil)
+(defun schemas-whitelist (schema)
+  (when (not schemas-whitelist-cache)
+    (setq schemas-whitelist-cache
+          (mysql-fetch (format "show schemas"))))
+  (member schema schemas-whitelist-cache))
 
-(setq tables-whitelist
-      (mysql-fetch
-        (format "select table_name
-             from information_schema.tables
-            where table_schema in (%s)"
-           (to-sql-list schemas-whitelist))))
+(setq tables-whitelist-cache nil)
+(defun tables-whitelist (table)
+  (when (not tables-whitelist-cache)
+    (setq tables-whitelist-cache
+          (mysql-fetch (format "select table_name from information_schema.tables where table_schema in (%s)"
+                               (to-sql-list schemas-whitelist-cache)))))
+  (member table tables-whitelist-cache))
 
 (provide 'auto-complete-mysql)
 
